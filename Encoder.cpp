@@ -1,8 +1,9 @@
 #include "Encoder.h"
 
-const  int clickToneFreq    = 3000;
-const  int clickTonePeriod  = 15;
+const  int clickToneFreq    = 4000;
+const  int clickTonePeriod  = 10;
 static int encoderCount = 0;
+static int speedControlECoffset = 0;
 
 byte curDat = 0;
 byte befDat = 0;
@@ -35,13 +36,13 @@ void EC_update()
     if(befDat == curDat) {
         if(!inputMatch) {
             matchCnt++;
-            if(matchCnt >= 5) {
+            if(matchCnt > 0) {
                 inputMatch = true;
                 int8_t encoder_pulse = EC_getPulse(curDat);
                 if (encoder_pulse) {
                   encoderCount += encoder_pulse;
                   tone(ifPin[beep], clickToneFreq, clickTonePeriod);
-                  delay(15);
+                  delay(clickTonePeriod);
                 }
             }
         }
@@ -77,4 +78,14 @@ int8_t EC_getPulse(byte dat)
 int16_t EC_getEncoderCount(void)
 {
   return encoderCount;
+}
+
+void EC_setECspeedOffset()
+{
+  speedControlECoffset = encoderCount;
+}
+
+int16_t EC_getECcountWithSpeedOffset(void)
+{
+  return encoderCount - speedControlECoffset;
 }
