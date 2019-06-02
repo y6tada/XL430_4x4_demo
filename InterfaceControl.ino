@@ -1,5 +1,4 @@
-// InterfaseHardware.c
-#include "InterfaceHardware.h"
+#include "number.h"
 
 void initInterfacePin() {
   for (int i = 0; i < max_pin_name; i++) {

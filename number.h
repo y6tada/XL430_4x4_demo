@@ -1,10 +1,5 @@
-// InterfaseHardware.h
-#include <Arduino.h>
-
-#ifndef __INTERFACE_HARDWARE_H__
-#define __INTERFACE_HARDWARE_H__
-
-void initInterfacePin();
+#ifndef __NUMBER_H__
+#define __NUMBER_H__
 
 enum ifPinName {
   sw_left_up,
@@ -47,6 +42,18 @@ const byte ifPinType[max_pin_name] = {
   OUTPUT,
   OUTPUT,
   OUTPUT
+};
+
+enum {
+    red,
+    green,
+    blue,
+    turnoff
+};
+
+enum {
+    servoAngle,
+    servoSelect
 };
 
 #endif

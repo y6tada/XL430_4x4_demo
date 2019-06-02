@@ -1,12 +1,13 @@
 #include <DynamixelShield.h>
-#include "InterfaceHardware.h"
-#include "Encoder.h"
+#include "number.h"
 
 #define DXL_OPERATING_MODE 11
+#define ANGLE_CLICL_RATIO  170
+#define SPEED_CLICL_RATIO  20
 
 DynamixelShield dxl;
 
-int curretnUImode  = 0;
+int curretnUImode  = green;
 int previousUImode = 0;
 
 const uint16_t click_freq	= 4000;
@@ -14,24 +15,20 @@ int32_t generalGoalPosition = 2048;
 
 bool isHolded = false;
 
-static int ECled_count = 0;
-static int ECled_sing  = 1;
-const  int ECled_limit = 3000;
-
 void setup() {
 	// put your setup code here, to run once:
 	dxl.begin(1000000, DXL_PACKET_VER_2_0);
 
 	EC_init();
 	initInterfacePin();
-	initIlluminate();
+	EC_lauchIlluminate();
 
 	dxl.ping();
 	delay(100);
-	dxl.setJointExtendedMode(DXL_ALL_ID);
-	dxl.setGoalPosition(DXL_ALL_ID, generalGoalPosition);
-
-	dxl.torqueOn(DXL_ALL_ID);
+	servo_setExtendedMode(DXL_ALL_ID);
+    delay(10);
+    dxl.setGoalPosition(EC_getECcount(servoSelect), generalGoalPosition);
+    delay(10);
 }
 
 void loop() {
@@ -40,51 +37,34 @@ void loop() {
 	updateCurrentUImode();
 
 	if(isHolded) {
-		if()
-	    EC_update(servoSelect);
-	    ECled_count++;
-	    if(ECled_count > ECled_limit) {
-	     	ECled_count = 0;
-	     	ECled_sing *= -1;
-	    }
-	    if(ECled_sing > 0) {
-	        EC_setLED(curretnUImode);
-	    }
-	    else {
-	    	EC_setLED(turnoff);
-	    }
+        EC_update(servoSelect);
+	    servo_ledUpdate(EC_getECcount(servoSelect));
+
+        EC_ledBlink();
 	}
 	else {
+        EC_update(servoAngle);
 		EC_setLED(curretnUImode);
-		EC_update(servoAngle);
 
 		switch (curretnUImode) {
 			case red:
 				if(previousUImode != curretnUImode){
 					previousUImode = curretnUImode;
 
-					dxl.torqueOff(DXL_ALL_ID);
-					delay(10);
-					dxl.setJointExtendedMode(1);
-					delay(10);
-					dxl.torqueOn(DXL_ALL_ID);
-					delay(10);
+                    servo_ledUpdate(EC_getECcount(servoSelect));
+					servo_setExtendedMode(DXL_ALL_ID);
 				}
-				dxl.setGoalPosition(1, generalGoalPosition + EC_getECcount(servoAngle) * 170);
+				dxl.setGoalPosition(EC_getECcount(servoSelect), generalGoalPosition + EC_getECcount(servoAngle) * ANGLE_CLICL_RATIO);
 				break;
 
 			case green:
 				if(previousUImode != curretnUImode){
 					previousUImode = curretnUImode;
 
-					dxl.torqueOff(DXL_ALL_ID);
-					delay(10);
-					dxl.setJointExtendedMode(DXL_ALL_ID);
-					delay(10);
-					dxl.torqueOn(DXL_ALL_ID);
-					delay(10);
+                    servo_ledUpdate(DXL_ALL_ID);
+					servo_setExtendedMode(DXL_ALL_ID);
 				}
-				dxl.setGoalPosition(DXL_ALL_ID, generalGoalPosition + EC_getECcount(servoAngle) * 170);
+				dxl.setGoalPosition(DXL_ALL_ID, generalGoalPosition + EC_getECcount(servoAngle) * ANGLE_CLICL_RATIO);
 				break;
 
 			case blue:
@@ -92,15 +72,10 @@ void loop() {
 					previousUImode = curretnUImode;
 
 					EC_setECspeedOffset();
-
-					dxl.torqueOff(DXL_ALL_ID);
-					delay(10);
-					dxl.setWheelMode(1);
-					delay(10);
-					dxl.torqueOn(DXL_ALL_ID);
-					delay(10);
+                    servo_ledUpdate(EC_getECcount(servoSelect));
+					servo_setWheelMode(DXL_ALL_ID);
 				}
-				dxl.setGoalSpeed(1, EC_getECcountWithSpeedOffset() * 20);
+				dxl.setGoalSpeed(EC_getECcount(servoSelect), EC_getECcountWithSpeedOffset() * SPEED_CLICL_RATIO);
 				break;
 
 			default:
@@ -108,15 +83,6 @@ void loop() {
 				break;
 		}
 	}
-}
-
-void initIlluminate()
-{
-	for(int i= 0; i < turnoff; i++){
-			EC_setLED(i);
-			delay(100);
-	}
-	EC_setLED(turnoff);
 }
 
 void updateCurrentUImode()
