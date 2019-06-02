@@ -6,11 +6,13 @@
 
 DynamixelShield dxl;
 
-int curretnUImode = 0;
+int curretnUImode  = 0;
 int previousUImode = 0;
 
 const uint16_t click_freq	= 4000;
 int32_t generalGoalPosition = 2048;
+
+bool isHolded = false;
 
 void setup() {
 	// put your setup code here, to run once:
@@ -18,7 +20,7 @@ void setup() {
 
 	EC_init();
 	initInterfacePin();
-	led_launch();
+	initIlluminate();
 
 	dxl.ping();
 	delay(100);
@@ -34,13 +36,15 @@ void loop() {
 	updateCurrentUImode();
 	EC_setLED(curretnUImode);
 
-	// Serial.print(curretnUImode);
-	// Serial.print("\t");
-	// Serial.println(previousUImode);
+	if(isHolded) {
+	    EC_update(servoSelect);
+	}
+	else {
+		EC_update(servoAngle);
+	}
 
 	switch (curretnUImode) {
 		case red:
-			
 			if(previousUImode != curretnUImode){
 				previousUImode = curretnUImode;
 
@@ -51,8 +55,9 @@ void loop() {
 				dxl.torqueOn(DXL_ALL_ID);
 				delay(10);
 			}
-			dxl.setGoalPosition(1, generalGoalPosition + EC_getEncoderCount() * 170);
+			dxl.setGoalPosition(1, generalGoalPosition + EC_getECcount(servoAngle) * 170);
 			break;
+
 		case green:
 			if(previousUImode != curretnUImode){
 				previousUImode = curretnUImode;
@@ -64,8 +69,9 @@ void loop() {
 				dxl.torqueOn(DXL_ALL_ID);
 				delay(10);
 			}
-			dxl.setGoalPosition(DXL_ALL_ID, generalGoalPosition + EC_getEncoderCount() * 170);
+			dxl.setGoalPosition(DXL_ALL_ID, generalGoalPosition + EC_getECcount(servoAngle) * 170);
 			break;
+
 		case blue:
 			if(previousUImode != curretnUImode){
 				previousUImode = curretnUImode;
@@ -86,17 +92,9 @@ void loop() {
 			// do something
 			break;
 	}
-
-	EC_update();
 }
 
-void dxl_setExtendedAngle()
-{
-	uint8_t p_data = 4;
-	dxl.write(1, DXL_OPERATING_MODE, &p_data, 1, 100);
-}
-
-void led_launch()
+void initIlluminate()
 {
 	for(int i= 0; i < turnoff; i++){
 			EC_setLED(i);
@@ -108,14 +106,32 @@ void led_launch()
 void updateCurrentUImode()
 {
 	if(digitalRead(ifPin[encoder_sw])){
+
+		tone(ifPin[beep], click_freq, 20);
+		// delay(20);
+
+		int encoder_sw_hold_cnt = 0;
+		while(digitalRead(ifPin[encoder_sw]) == HIGH) {
+			encoder_sw_hold_cnt++;
+			delay(10);
+			if(encoder_sw_hold_cnt > 50) {
+			    isHolded = true;
+			    tone(ifPin[beep], click_freq, 200);
+			    delay(200);
+			    while(digitalRead(ifPin[encoder_sw]) == HIGH);
+			    break;
+			}
+		}
+		delay(100);
+
+		if(isHolded) {
+		    isHolded = false;
+		}
+		else {
 			curretnUImode++;
 			if(curretnUImode > blue){
 				curretnUImode = 0;
 			}
-
-			tone(ifPin[beep], click_freq, 20);
-			delay(20);
-			while(digitalRead(ifPin[encoder_sw]) == HIGH);
-			delay(50);
+		}
 	}
 }

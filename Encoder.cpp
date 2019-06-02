@@ -1,10 +1,10 @@
 #include "Encoder.h"
 
-const  int clickToneFreq        = 4000;
-const  int clickTonePeriod      = 10;
+const  int clickToneFreq            = 4000;
+const  int clickTonePeriod          = 10;
 
-static int encoderCount         = 0;
-static int speedControlECoffset = 0;
+static int encoderCount[2]          = {0, 0};
+static int speedControlECoffset     = 0;
 
 byte curDat     = 0;
 byte befDat     = 0;
@@ -31,7 +31,7 @@ void EC_getCurDat(byte *dat_p)
         *dat_p |= 1;
 }
 // -------------------------------------------------------------------------- //
-void EC_update()
+void EC_update(int rotationType)
 {
     EC_getCurDat(&curDat);
 
@@ -42,7 +42,7 @@ void EC_update()
                 inputMatch = true;
                 int8_t encoder_pulse = EC_getPulse(curDat);
                 if (encoder_pulse) {
-                    encoderCount += encoder_pulse;
+                    encoderCount[rotationType] += encoder_pulse;
                     tone(ifPin[beep], clickToneFreq, clickTonePeriod);
                     delay(clickTonePeriod);
                 }
@@ -50,9 +50,9 @@ void EC_update()
         }
     }
     else {
-          befDat       = curDat;
-          matchCnt     = 0;
-          inputMatch = false;
+        befDat      = curDat;
+        matchCnt    = 0;
+        inputMatch  = false;
     }
 }
 // -------------------------------------------------------------------------- //
@@ -77,19 +77,19 @@ int8_t EC_getPulse(byte dat)
     }
 }
 // -------------------------------------------------------------------------- //
-int16_t EC_getEncoderCount(void)
-{
-    return encoderCount;
-}
-// -------------------------------------------------------------------------- //
 void EC_setECspeedOffset()
 {
-    speedControlECoffset = encoderCount;
+    speedControlECoffset = encoderCount[servoAngle];
 }
 // -------------------------------------------------------------------------- //
-int16_t EC_getECcountWithSpeedOffset(void)
+int16_t EC_getECcount(int rotationType)
 {
-    return encoderCount - speedControlECoffset;
+    return encoderCount[rotationType];
+}
+// -------------------------------------------------------------------------- //
+int16_t EC_getECcountWithSpeedOffset()
+{
+    return encoderCount[servoAngle] - speedControlECoffset;
 }
 // -------------------------------------------------------------------------- //
 void EC_setLED(int ledColors)
