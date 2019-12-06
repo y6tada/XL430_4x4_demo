@@ -78,6 +78,15 @@ void loop() {
                 dxl.setGoalSpeed(EC_getECcount(servoSelect), EC_getECcountWithSpeedOffset() * SPEED_CLICL_RATIO);
                 break;
 
+            case yellow:
+            break;
+
+            case cyan:
+            break;
+
+            case purple:
+            break;
+
             default:
                 // do something
                 break;
@@ -120,7 +129,7 @@ void updateCurrentUImode()
 void switchUImodeToNext()
 {
     curretnUImode++;
-    if(curretnUImode > blue){
+    if(curretnUImode >= turnoff){
         curretnUImode = 0;
     }
 }

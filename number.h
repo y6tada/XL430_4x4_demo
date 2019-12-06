@@ -48,6 +48,9 @@ enum {
     red,
     green,
     blue,
+    yellow,
+    cyan,
+    purple,
     turnoff
 };
 

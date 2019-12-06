@@ -112,26 +112,31 @@ void EC_setLED(int ledColors)
 {
     switch (ledColors) {
         case red:
-            digitalWrite(ifPin[encoder_led_r], 0);
-            digitalWrite(ifPin[encoder_led_g], 1);
-            digitalWrite(ifPin[encoder_led_b], 1);
+            setRGB(1, 0, 0);
             break;
+
         case green:
-            digitalWrite(ifPin[encoder_led_r], 1);
-            digitalWrite(ifPin[encoder_led_g], 0);
-            digitalWrite(ifPin[encoder_led_b], 1);
+            setRGB(0, 1, 0);
             break;
 
         case blue:
-            digitalWrite(ifPin[encoder_led_r], 1);
-            digitalWrite(ifPin[encoder_led_g], 1);
-            digitalWrite(ifPin[encoder_led_b], 0);
+            setRGB(0, 0, 1);
+            break;
+
+        case yellow:
+            setRGB(1, 1, 0);
+            break;
+
+        case cyan:
+            setRGB(0, 1, 1);
+            break;
+
+        case purple:
+            setRGB(1, 0, 1);
             break;
 
         default:
-            digitalWrite(ifPin[encoder_led_r], 1);
-            digitalWrite(ifPin[encoder_led_g], 1);
-            digitalWrite(ifPin[encoder_led_b], 1);
+            setRGB(0, 0, 0);
             break;
     }
 }
@@ -165,4 +170,11 @@ static int8_t EC_getPulse(byte dat)
             return 0;
             break;
     }
+}
+
+void setRGB(byte r, byte g, byte b)
+{
+    digitalWrite(ifPin[encoder_led_r], r == 0 ? 1 : 0);
+    digitalWrite(ifPin[encoder_led_g], g == 0 ? 1 : 0);
+    digitalWrite(ifPin[encoder_led_b], b == 0 ? 1 : 0);
 }

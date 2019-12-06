@@ -5,7 +5,5 @@ void initInterfacePin() {
     pinMode(ifPin[i], ifPinType[i]);
     }
 
-    digitalWrite(ifPin[encoder_led_r], 1);
-    digitalWrite(ifPin[encoder_led_g], 1);
-    digitalWrite(ifPin[encoder_led_b], 1);
+    EC_setLED(turnoff);
 }
